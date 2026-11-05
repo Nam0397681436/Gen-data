@@ -6,10 +6,10 @@ services:
     # Đổi tên ảnh thành số CCCD ngẫu nhiên
     command: python rename_images_cccd.py
     volumes:
-      # Mount thư mục ảnh từ máy HOST vào container
       - ./images:/app/images
       - ./rename_images_cccd.py:/app/rename_images_cccd.py
-    network_mode: host
+    networks:
+      - platform_net
 
   put-images-oracle:
     build: .
@@ -20,4 +20,18 @@ services:
     volumes:
       - ./images:/app/images
       - ./putimg_orcl.py:/app/putimg_orcl.py
-    network_mode: host
+    environment:
+      # Kết nối Oracle qua tên container trong network "platform_net"
+      ORACLE_HOST: oracle-db
+      ORACLE_USER: IMGDATA
+      ORACLE_PASSWORD: Nam12345
+      ORACLE_SERVICE: XEPDB1
+    networks:
+      - platform_net
+
+# Dùng chung network với stack "platform" (infra/docker-compose.yml)
+# → container có thể gọi "oracle-db" bằng tên thay vì IP
+networks:
+  platform_net:
+    external: true
+    name: platform_default
